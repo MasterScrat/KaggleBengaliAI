@@ -1,0 +1,11 @@
+name: bengaliai-env
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - keras==2.3.1
+  - opencv
+  - fastparquet
+  - python-snappy
+  - tensorflow-gpu==2
+prefix: /home/flaurent/anaconda3/envs/bengaliai-env
