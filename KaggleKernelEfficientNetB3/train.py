@@ -7,6 +7,12 @@ from math import ceil
 import cv2
 import tensorflow as tf
 
+# OMG TF go die in a fire
+# https://github.com/tensorflow/tensorflow/issues/24828#issuecomment-581173586
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 # Keras
 import keras
 import keras.backend as K
@@ -17,9 +23,9 @@ from keras.callbacks import Callback, ModelCheckpoint
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold, MultilabelStratifiedShuffleSplit
 
 # Custom 
-from .preprocessing import generate_images, resize_image
-from .model import create_model
-from .utils import plot_summaries
+from preprocessing import generate_images, resize_image
+from model import create_model
+from utils import plot_summaries
 
 # Seeds
 SEED = 1234
@@ -27,8 +33,7 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 # Input Dir
-# DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data' # mac
-DATA_DIR = '/home/flaurent/kaggle/KaggleBengaliAI/bengaliai-cv19' # rgpu
+DATA_DIR = '../bengaliai-cv19'
 TRAIN_DIR = './train/'
 
 # Constants
