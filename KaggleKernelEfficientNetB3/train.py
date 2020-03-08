@@ -17,9 +17,9 @@ from keras.callbacks import Callback, ModelCheckpoint
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold, MultilabelStratifiedShuffleSplit
 
 # Custom 
-from preprocessing import generate_images, resize_image
-from model import create_model
-from utils import plot_summaries
+from .preprocessing import generate_images, resize_image
+from .model import create_model
+from .utils import plot_summaries
 
 # Seeds
 SEED = 1234
@@ -27,7 +27,8 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 # Input Dir
-DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data'
+# DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data' # mac
+DATA_DIR = '/home/flaurent/kaggle/KaggleBengaliAI/bengaliai-cv19' # rgpu
 TRAIN_DIR = './train/'
 
 # Constants
@@ -60,6 +61,7 @@ if GENERATE_IMAGES:
     generate_images(DATA_DIR, TRAIN_DIR, WIDTH, HEIGHT, WIDTH_NEW, HEIGHT_NEW)
 
 # Prepare Train Labels (Y)
+print("Preparing training labels...")
 train_df = pd.read_csv(os.path.join(DATA_DIR, 'train.csv'))
 tgt_cols = ['grapheme_root', 'vowel_diacritic', 'consonant_diacritic']
 desc_df = train_df[tgt_cols].astype('str').describe()
@@ -73,6 +75,7 @@ Y_train = pd.get_dummies(train_df)
 # Cleanup
 del train_df
 gc.collect()
+
 
 # Model checkpoint
 def ModelCheckpointFull(model_name):
@@ -141,6 +144,7 @@ class TrainDataGenerator(keras.utils.Sequence):
     # Create Model
 
 
+print("Creating model...")
 model = create_model(input_shape=(HEIGHT_NEW, WIDTH_NEW, CHANNELS))
 
 # Compile Model
@@ -202,6 +206,8 @@ def CustomReduceLRonPlateau(model, history, epoch):
             K.set_value(model.optimizer.lr, new_lr)
 
 
+print("Starting training...")
+
 # History Placeholder
 history = {}
 
@@ -241,7 +247,7 @@ for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
                         validation_steps=VALID_STEPS,
                         epochs=1,
                         callbacks=[ModelCheckpointFull(RUN_NAME + 'model_' + str(epoch) + '.h5')],
-                        verbose=1)
+                        verbose=2)
 
     # Set and Concat Training History
     temp_history = model.history.history
@@ -256,6 +262,8 @@ for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
     # Cleanup
     del data_generator_train, data_generator_val, train_idx, valid_idx
     gc.collect()
+
+print("Training done!")
 
 # Plot Training Summaries
 plot_summaries(history, PLOT_NAME1, PLOT_NAME2)
@@ -286,3 +294,5 @@ for i in range(4):
 submission = pd.DataFrame({'row_id': row_ids, 'target': targets}, columns=['row_id', 'target'])
 submission.to_csv('submission.csv', index=False)
 print(submission.head(25))
+
+print("All done!")

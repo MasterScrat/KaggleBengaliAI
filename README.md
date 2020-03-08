@@ -2,10 +2,12 @@
 
 ## Setup
 
+API credentials: https://github.com/Kaggle/kaggle-api#api-credentials
+
 Download the dataset:
 
 ```
-# API credentials: https://github.com/Kaggle/kaggle-api#api-credentials
+# vim ~/.kaggle/kaggle.json
 pip install kaggle --upgrade
 kaggle competitions download -c bengaliai-cv19
 unzip bengaliai-cv19.zip -d <dest>
@@ -18,13 +20,18 @@ For image preprocessing I just invert, normalize and scale the image... nothing 
 conda create --name bengaliai-env python=3.6 --yes
 conda activate bengaliai-env
 echo $CONDA_DEFAULT_ENV
-conda install tensorflow==2 --yes
+conda install -c anaconda tensorflow-gpu==2 --yes
+# without GPU:
+#conda install tensorflow==2 --yes
 conda install keras==2.3.1 --yes
 conda install -c menpo opencv --yes
 conda install -c trent-b iterative-stratification --yes
+# on linux had to use pip:
+# pip install iterative-stratification
 pip install -U efficientnet
 conda install -c conda-forge fastparquet --yes
-# on MacOS you need snappy decompression for fastparquet:
+conda install python-snappy
+# on MacOS may need snappy decompression for fastparquet:
 # brew install snappy
 # CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
 ```
@@ -50,6 +57,24 @@ https://arxiv.org/abs/1711.02512
 
 > A novel trainable Generalized-Mean (GeM) pooling layer that generalizes max and average pooling and boosts retrieval performance
 
+### Cutmix augmentation (to test!)
+
+https://arxiv.org/abs/1905.04899
+
+> CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features
+
+Mentioned a lot in top models: https://www.kaggle.com/c/bengaliai-cv19/discussion/123198
+
+Implementations:
+- https://github.com/DevBruce/CutMixImageDataGenerator_For_Keras
+
+### Contrast Limited Adaptive Histogram Equalization
+
+https://en.wikipedia.org/wiki/Adaptive_histogram_equalization#Contrast_Limited_AHE
+
+Used eg here: https://www.kaggle.com/devbruce/kakr-2019-3rd-cutmix-ensemble-keras#Image-Preprocessing---CLAHE
+
+Supported by `albumentations`
 
 ## Packages
 
