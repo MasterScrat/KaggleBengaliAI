@@ -7,6 +7,12 @@ from math import ceil
 import cv2
 import tensorflow as tf
 
+# OMG TF go die in a fire
+# https://github.com/tensorflow/tensorflow/issues/24828#issuecomment-581173586
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 # Keras
 import keras
 import keras.backend as K
@@ -17,9 +23,14 @@ from keras.callbacks import Callback, ModelCheckpoint
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold, MultilabelStratifiedShuffleSplit
 
 # Custom 
-from .preprocessing import generate_images, resize_image
-from .model import create_model
-from .utils import plot_summaries
+from preprocessing import generate_images, resize_image
+from model import create_model
+from utils import plot_summaries
+
+import wandb
+from wandb.keras import WandbCallback
+
+wandb.init(project="bengaliai")
 
 # Seeds
 SEED = 1234
@@ -27,8 +38,8 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 # Input Dir
-# DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data' # mac
-DATA_DIR = '/home/flaurent/kaggle/KaggleBengaliAI/bengaliai-cv19' # rgpu
+#DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data'
+DATA_DIR = '../bengaliai-cv19'
 TRAIN_DIR = './train/'
 
 # Constants
@@ -41,6 +52,7 @@ RUN_NAME = 'Train1_'
 PLOT_NAME1 = 'Train1_LossAndAccuracy.png'
 PLOT_NAME2 = 'Train1_Recall.png'
 
+# Hyperparameters
 BATCH_SIZE = 56
 CHANNELS = 3
 EPOCHS = 80
@@ -54,6 +66,12 @@ print("Channels: {}".format(CHANNELS))
 print("Epochs: {}".format(EPOCHS))
 print("Test portion: {}".format(TEST_SIZE))
 print("-" * 50)
+
+wandb.config.rescale = SCALE_FACTOR
+wandb.config.batchsize = BATCH_SIZE
+wandb.config.channels = CHANNELS
+wandb.config.testportion = TEST_SIZE
+wandb.config.machine = os.uname()[1]
 
 # Generate Image (Has to be done only one time .. or again when changing SCALE_FACTOR)
 GENERATE_IMAGES = False
@@ -246,8 +264,11 @@ for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
                         steps_per_epoch=TRAIN_STEPS,
                         validation_steps=VALID_STEPS,
                         epochs=1,
-                        callbacks=[ModelCheckpointFull(RUN_NAME + 'model_' + str(epoch) + '.h5')],
-                        verbose=2)
+                        callbacks=[
+                            ModelCheckpointFull(RUN_NAME + 'model_' + str(epoch) + '.h5'),
+                            WandbCallback()
+                        ],
+                        verbose=1)
 
     # Set and Concat Training History
     temp_history = model.history.history
