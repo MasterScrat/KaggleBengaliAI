@@ -1,5 +1,13 @@
 # Kaggle Bengali.AI Handwritten Grapheme Classification
 
+## To try
+
+- [ ] Try Fleuret paper for sample prioritization!
+
+- [ ] Optimize [fit_generator](https://keras.io/models/model/#fit_generator) parameters: more workers? May need to [reduce queue size in this case](https://stackoverflow.com/a/45539517/318557). Will need `use_multiprocessing`.
+
+- [ ] Cutmix augmentation (see below)
+
 ## Setup
 
 API credentials: https://github.com/Kaggle/kaggle-api#api-credentials
@@ -10,11 +18,33 @@ Download the dataset:
 # vim ~/.kaggle/kaggle.json
 pip install kaggle --upgrade
 kaggle competitions download -c bengaliai-cv19
-unzip bengaliai-cv19.zip -d <dest>
+unzip bengaliai-cv19.zip -d bengaliai-cv19
 ```
 
 The model consists of an EfficientNet B3 pre-trained (on Imagenet) model with a generalized mean pool and custom head layer.
 For image preprocessing I just invert, normalize and scale the image... nothing else. No form of augmentation is used.
+
+Create from existing environments:
+
+```
+# Update conda
+conda update -n root conda
+
+# Linux w/ GPU
+conda env create -f linux-gpu-env.yml
+
+# MacOS wo/ GPU
+conda env create -f mac-env.yml
+```
+
+Backup solution (using `--from-history` which doesn't capture pip packages):
+
+```
+conda env create -f env.yml 
+pip install -U iterative-stratification efficientnet tqdm
+```
+
+Creating the env from scratch:
 
 ```
 conda create --name bengaliai-env python=3.6 --yes
@@ -40,6 +70,10 @@ Set the following path in `train.py`:
 - DATA_DIR (directory with the Bengali.AI dataset)
 - TRAIN_DIR (directory to store the generated training images) 
 - GENERATE_IMAGES (whether to extract images from parquet files, should be done initially)
+
+Training:
+
+`clear; time python train.py`
 
 Inference kernel: https://www.kaggle.com/rsmits/keras-efficientnet-b3-training-inference
 
@@ -85,6 +119,8 @@ https://github.com/trent-b/iterative-stratification
 > iterative-stratification is a project that provides scikit-learn compatible cross validators with stratification for multilabel data.
 
 ## Training
+
+(Comments from original author below)
 
 I've trained the model for 80 epochs and picked some model weight files todo an ensemble in the inference kernel. 
 
