@@ -1,12 +1,20 @@
 # Kaggle Bengali.AI Handwritten Grapheme Classification
 
+[**WandB Report**](https://app.wandb.ai/masterscrat/bengaliai/reports/BengaliAI-Kaggle--Vmlldzo2MzY0Mw)
+
 ## To try
+
+- [x] Weights & Biases integration
 
 - [ ] Try Fleuret paper for sample prioritization!
 
 - [ ] Optimize [fit_generator](https://keras.io/models/model/#fit_generator) parameters: more workers? May need to [reduce queue size in this case](https://stackoverflow.com/a/45539517/318557). Will need `use_multiprocessing`.
 
-- [ ] Cutmix augmentation (see below)
+- [ ] Cutmix augmentation (see below). [Keras kernel](https://www.kaggle.com/code1110/mixup-cutmix-in-keras). Target [224x224](https://www.kaggle.com/c/bengaliai-cv19/discussion/123198#719100)?
+
+- [ ] Train with OneCycle learning rate (https://github.com/titu1994/keras-one-cycle#training-with-onecyclelr)
+
+- [ ] Estimate optimal LR with LRFinder (https://github.com/surmenok/keras_lr_finder#usage)
 
 ## Setup
 
@@ -40,7 +48,7 @@ conda env create -f mac-env.yml
 Backup solution (using `--from-history` which doesn't capture pip packages):
 
 ```
-conda env create -f env.yml 
+conda env create -f env-from-history.yml 
 pip install -U iterative-stratification efficientnet tqdm
 ```
 
@@ -65,6 +73,8 @@ conda install python-snappy
 # brew install snappy
 # CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
 ```
+
+TODO add wandb to setup
 
 Set the following path in `train.py`:
 - DATA_DIR (directory with the Bengali.AI dataset)

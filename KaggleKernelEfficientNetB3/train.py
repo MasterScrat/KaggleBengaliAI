@@ -38,7 +38,7 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 # Input Dir
-#DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data'
+# DATA_DIR = '/Users/flaurent/Sites/KaggleBengaliAI/data'
 DATA_DIR = '../bengaliai-cv19'
 TRAIN_DIR = './train/'
 
@@ -53,6 +53,8 @@ PLOT_NAME1 = 'Train1_LossAndAccuracy.png'
 PLOT_NAME2 = 'Train1_Recall.png'
 
 # Hyperparameters
+# 6gb: 50 works for 56 epochs then crashes! 52 doesnt start
+# 8gb; 56 works
 BATCH_SIZE = 56
 CHANNELS = 3
 EPOCHS = 80
@@ -231,7 +233,8 @@ history = {}
 
 # Epoch Training Loop
 for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
-    print('=========== EPOCH {}'.format(epoch))
+    print()
+    print('[EPOCH {}]'.format(epoch))
 
     # Get train and test index, shuffle train indexes.
     train_idx = msss_splits[0]
@@ -259,6 +262,18 @@ for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
     print('Train Generator Size: {0}'.format(len(data_generator_train)))
     print('Validation Generator Size: {0}'.format(len(data_generator_val)))
 
+    """
+    # doesnt work: timeout, too much to upload probably
+    # TODO experiment more finely
+    # TODO use `generator` parameter instead of `training_data`
+    WandbCallback(
+        log_weights=True,
+        log_gradients=True,
+        training_data=(X_train, Y_train),
+        data_type="image"
+    )
+    """
+
     model.fit_generator(generator=data_generator_train,
                         validation_data=data_generator_val,
                         steps_per_epoch=TRAIN_STEPS,
@@ -266,7 +281,7 @@ for epoch, msss_splits in zip(range(0, EPOCHS), msss.split(X_train, Y_train)):
                         epochs=1,
                         callbacks=[
                             ModelCheckpointFull(RUN_NAME + 'model_' + str(epoch) + '.h5'),
-                            WandbCallback()
+                            WandbCallback(),
                         ],
                         verbose=1)
 
